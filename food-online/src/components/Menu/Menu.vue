@@ -1,0 +1,555 @@
+<template>
+    <div class="container">
+        <!-- Header -->
+        <div class="header-section">
+            <h1 class="page-title">หิวใช่หรือไม่?</h1>
+            <button @click="toggleCart" class="view-cart-btn" id="sticky">
+                ตะกร้า ({{ cart.length }})
+            </button>
+        </div>
+
+        <!-- Categories -->
+        <nav class="categories-nav">
+            <div v-for="(category, index) in categories" :key="index" class="category-pill"
+                :class="{ active: category.active }">
+                {{ category.title }}
+            </div>
+        </nav>
+
+        <!-- Featured Recipe -->
+        <div class="featured-recipe">
+            <img src="https://www.prachachat.net/wp-content/uploads/2023/11/%E0%B8%82%E0%B9%89%E0%B8%AD%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B9%83%E0%B8%99%E0%B8%A2%E0%B9%88%E0%B8%AD%E0%B8%AB%E0%B8%99%E0%B9%89%E0%B8%B2%E0%B8%82%E0%B8%AD%E0%B8%87%E0%B8%84%E0%B8%B8%E0%B8%93-7-2.jpg"
+                alt="Featured Recipe" class="featured-image">
+            <div class="featured-content">
+                <h2 class="featured-title" style="color: black;">ไก่ทอด KFC</h2>
+                <button class="view-recipe-btn" @click="addToCart('ไก่ทอด KFC')">สั่งเลย</button>
+            </div>
+        </div>
+        <Search />
+        <!-- Recipe Grid -->
+        <div class="recipes-section">
+            <div class="section-header">
+                <h2 class="section-title">เมนูยอดนิยม</h2>
+                <button class="view-all-btn">ดูทั้งหมด</button>
+            </div>
+
+            <div class="recipes-grid">
+                <div v-for="(recipe, index) in recipes" :key="index" class="recipe-card">
+                    <div class="recipe-image-wrapper">
+                        <img :src="recipe.imageUrl" :alt="recipe.title" class="recipe-image">
+                    </div>
+                    <div class="recipe-info">
+                        <div class="recipe-meta">
+                            <span class="recipe-category">{{ recipe.category }}</span>
+                            <div class="recipe-rating">
+                                <span class="rating-number">{{ recipe.rating }}</span>
+                                <span class="star filled">★</span>
+                            </div>
+                        </div>
+                        <h3 class="recipe-title">{{ recipe.title }}</h3>
+                        <p class="recipe-chef">โดย {{ recipe.chef }}</p>
+                        <button class="button-view-menu" @click="addToCart(recipe.title)">หยิบใส่ตะกร้า</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showCart" class="cart-modal">
+            <div class="cart-list">
+                <h2>รายการในตะกร้า</h2>
+                <ul>
+                    <li v-for="(item, index) in cart" :key="index" class="cart-item">
+                        {{ item }} <button @click="removeFromCart(index)" class="remove-btn">ลบ</button>
+                    </li>
+                </ul>
+                <div class="cart-footer">
+                    <button @click="toggleCart" class="close-btn">ปิด</button>
+                    <button @click="confirmOrder" class="confirm-order-btn">ยืนยันการสั่งซื้อ</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Confirmation Modal -->
+        <div v-if="showConfirmation" class="confirmation-modal">
+            <h2>ยืนยันการสั่งซื้อ</h2>
+            <p>คุณต้องการสั่งอาหารต่อไปนี้:</p>
+            <ul>
+                <li v-for="(item, index) in cart" :key="index">{{ item }}</li>
+            </ul>
+            <button @click="placeOrder">ยืนยัน</button>
+            <button @click="cancelOrder">ยกเลิก</button>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import Search from '../Search/Search.vue';
+
+// Reactive state
+const categories = ref([
+    { title: 'ทั้งหมด', active: true },
+    { title: 'อาหารไทย', active: false },
+    { title: 'อาหารอีสาน', active: false },
+    { title: 'อาหารฟิวชั่น', active: false },
+    { title: 'ของหวาน', active: false },
+    { title: 'เครื่องดื่ม', active: false }
+]);
+
+const recipes = ref([
+    {
+        title: 'สลัดไก่ทอดสมุนไพร',
+        category: 'อาหารฟิวชั่น',
+        rating: 4.9,
+        chef: 'เชฟมิ้นท์',
+        imageUrl: 'https://img.wongnai.com/p/1920x0/2022/09/21/ffe2ec4187a24c69ae86ce20641bdd86.jpg'
+    },
+    {
+        title: 'ข้าวผัดกุ้งกระเทียม',
+        category: 'อาหารไทย',
+        rating: 4.8,
+        chef: 'เชฟปิง',
+        imageUrl: 'https://www.pholfoodmafia.com/wp-content/uploads/2018/07/1000x6503GarlicPrawnFriedRice.jpg'
+    },
+    {
+        title: 'ส้มตำไทย',
+        category: 'อาหารอีสาน',
+        rating: 4.9,
+        chef: 'เชฟแหม่ม',
+        imageUrl: 'https://www.unileverfoodsolutions.co.th/th/chef-inspiration/simple-tips-for-great-flavour/somtum-green-papaya-salad-recipes/jcr:content/parsys/content-aside-footer/tipsandadvice/image.img.jpg/1695118621402.jpg'
+    }
+]);
+
+const cart = ref([]);
+const showCart = ref(false);
+const showConfirmation = ref(false);
+
+// Methods
+const addToCart = (item) => {
+    cart.value.push(item);
+};
+
+const removeFromCart = (index) => {
+    cart.value.splice(index, 1);
+};
+
+const toggleCart = () => {
+    showCart.value = !showCart.value;
+};
+
+const confirmOrder = () => {
+    if (cart.value.length > 0) {
+        showConfirmation.value = true;
+        showCart.value = false; // Hide cart on confirm
+    }
+};
+
+const placeOrder = () => {
+    alert('สั่งซื้อเรียบร้อยแล้ว: ' + cart.value.join(', '));
+    cart.value = []; // Clear cart
+    showConfirmation.value = false;
+};
+
+const cancelOrder = () => {
+    showConfirmation.value = false; // Close confirmation modal
+};
+</script>
+
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap');
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Kanit', sans-serif;
+}
+
+:root {
+    --primary-color: #2D3436;
+    --accent-color: #00B894;
+    --background-color: #FFFFFF;
+    --surface-color: #F8FAFC;
+    --text-primary: #2D3436;
+    --text-secondary: #636E72;
+    --border-color: #DFE6E9;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px;
+}
+
+/* #sticky{
+    position: sticky;
+    top: 0;
+} */
+
+.cart-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.cart-list {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 100%;
+    padding: 20px;
+    list-style: none;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.remove-btn {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.cart-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.close-btn,
+.confirm-order-btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.close-btn {
+    background-color: #ccc;
+    color: #333;
+}
+
+.confirm-order-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+
+/* Header styles */
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.page-title {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+}
+
+.search-container {
+    position: relative;
+    flex: 0 0 360px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 14px 44px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    font-size: 15px;
+    background-color: var(--surface-color);
+    transition: all 0.2s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 4px rgba(0, 184, 148, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+}
+
+/* Categories navigation */
+.categories-nav {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 40px;
+    overflow-x: auto;
+    padding: 4px;
+    scrollbar-width: none;
+}
+
+.categories-nav::-webkit-scrollbar {
+    display: none;
+}
+
+.category-pill {
+    padding: 10px 20px;
+    background-color: var(--surface-color);
+    border-radius: 100px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.category-pill.active {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+/* Featured Recipe */
+.featured-recipe {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 48px;
+    aspect-ratio: 21/9;
+}
+
+.featured-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.featured-recipe:hover .featured-image {
+    transform: scale(1.02);
+}
+
+.featured-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 40px;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
+    color: white;
+}
+
+.featured-label {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: var(--accent-color);
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 16px;
+}
+
+.featured-title {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.featured-description {
+    font-size: 16px;
+    opacity: 0.9;
+    margin-bottom: 20px;
+}
+
+.view-recipe-btn {
+    padding: 12px 24px;
+    background-color: #f97316;
+    color: var(--text-primary);
+    border: none;
+    border-radius: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.button-view-menu {
+    padding: 12px 24px;
+    background-color: #f97316;
+    border: none;
+    border-radius: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+
+}
+
+.view-recipe-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Recipe section */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.view-all-btn {
+    color: var(--accent-color);
+    font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.recipes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.recipe-card {
+    background-color: var(--background-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: transform 0.2s ease;
+}
+
+.recipe-card:hover {
+    transform: translateY(-4px);
+}
+
+.recipe-image-wrapper {
+    position: relative;
+    aspect-ratio: 4/3;
+}
+
+.recipe-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.recipe-time {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    padding: 6px 12px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 100px;
+    font-size: 12px;
+}
+
+.recipe-info {
+    padding: 20px;
+}
+
+.recipe-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.recipe-category {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.recipe-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.rating-number {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.star.filled {
+    color: #FFB800;
+}
+
+.recipe-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.recipe-chef {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+
+    .header-section {
+        flex-direction: column;
+        gap: 20px;
+        align-items: stretch;
+    }
+
+    .search-container {
+        flex: none;
+    }
+
+    .featured-content {
+        padding: 24px;
+    }
+
+    .featured-title {
+        font-size: 24px;
+    }
+
+    .recipes-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .recipes-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>

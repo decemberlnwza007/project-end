@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>Name</th>
+                <th>Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% category.forEach(cate => { %>
+                <tr>
+                    <td><%= cate.id %></td>
+                    <td><%= cate.category_name %></td>
+                    <td><%= cate.category_types %></td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+    <ul>
+    </ul>
+    <h1>Upload Category Image</h1>
+    <form action="/category/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="categoryImage" required />
+        <button type="submit">Upload</button>
+    </form>
+</body>
+
+</html>
