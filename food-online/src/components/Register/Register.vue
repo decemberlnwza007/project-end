@@ -4,8 +4,7 @@
         <div class="login-container">
             <div class="logo-container">
                 <div class="logo">🍽️</div>
-                <h2 class="head">อร่อยครบจบที่นี่</h2>
-                <p class="subtitle">เข้าสู่ระบบเพื่อสั่งอาหารอร่อยๆ</p>
+                <h2 class="head">สมัครสมาชิกใหม่</h2>
             </div>
 
             <form @submit.prevent="handleSubmit" id="loginForm">
@@ -17,7 +16,7 @@
                             id="email" 
                             placeholder="example@email.com" 
                             required 
-                            v-model="username"
+                            v-model="email"
                             @focus="focusLabel('email')" 
                             @blur="blurLabel('email')"
                         />
@@ -45,13 +44,33 @@
                         </span>
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label for="username">ชื่อผู้ใช้</label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="text"
+                            id="username" 
+                            placeholder="กรุณากรอกชื่อผู้ใช้" 
+                            required 
+                            v-model="username"
+                            @focus="focusLabel('username')" 
+                            @blur="blurLabel('username')"
+                        />
+                        <span 
+                            class="input-icon password-toggle" 
+                        >
+                        <OhVueIcon name="fa-unlock" />
+                        </span>
+                    </div>
+                </div>
                 
                 <button type="submit" class="login-btn">
-                    เข้าสู่ระบบ
+                    สมัครสมาชิก
                     <OhVueIcon name="md-lunchdining" style="width: 22px; height: 22px;" />
                 </button>
                 
-                <div class="separator">
+                <!-- <div class="separator">
                     <span>หรือเข้าสู่ระบบด้วย</span>
                 </div>
 
@@ -64,14 +83,11 @@
                         <OhVueIcon name="pr-google" />
                         Google
                     </button>
-                </div>
+                </div> -->
 
                 <div class="links">
                     <a href="register.html" class="register-link">
-                        <OhVueIcon name="fa-user-plus" /> สมัครสมาชิกใหม่
-                    </a>
-                    <a href="#" class="forgot-link">
-                        <OhVueIcon name="hi-solid-lock-closed" /> ลืมรหัสผ่าน?
+                        <OhVueIcon name="md-login-twotone" /> เข้าสู่ระบบ
                     </a>
                 </div>
             </form>
@@ -85,7 +101,7 @@ import { auth, provider } from '../../firebase';
 import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { useRouter } from 'vue-router';
 import { OhVueIcon, addIcons } from 'oh-vue-icons';
-import { IoLogoFacebook, PrGoogle, MdLunchdining, MdEmail, FaUnlock, FaUserPlus, HiSolidLockClosed } from 'oh-vue-icons/icons';
+import { IoLogoFacebook, PrGoogle, MdLunchdining, MdEmail, FaUnlock, FaUserPlus, HiSolidLockClosed, MdLoginTwotone  } from 'oh-vue-icons/icons';
 
 const icons = {
     IoLogoFacebook,
@@ -94,7 +110,8 @@ const icons = {
     MdEmail,
     FaUnlock,
     FaUserPlus,
-    HiSolidLockClosed
+    HiSolidLockClosed,
+    MdLoginTwotone
 }
 
 addIcons(IoLogoFacebook);
@@ -104,6 +121,7 @@ addIcons(MdEmail);
 addIcons(FaUnlock);
 addIcons(FaUserPlus);
 addIcons(HiSolidLockClosed);
+addIcons(MdLoginTwotone);
 
 const router = useRouter();
 const username = ref('');

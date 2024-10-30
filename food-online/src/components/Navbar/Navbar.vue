@@ -8,17 +8,9 @@
         </div>
 
         <div class="navbar-menu">
-          <router-link
-            v-for="item in menuItems"
-            :key="item.path"
-            :to="item.path"
-            class="menu-item"
-            @mouseover="hoveredItem = item.name"
-            @mouseleave="hoveredItem = null"
-          >
-            {{ item.name }}
-            <div :class="['menu-item-underline', { 'underline-active': hoveredItem === item.name }]"></div>
-          </router-link>
+          <router-link to="/" class="menu-item">หน้าแรก</router-link>
+          <router-link to="/menu" class="menu-item">เมนูอาหาร</router-link>
+          <!-- <router-link to="/promotions" class="menu-item">โปรโมชั่น</router-link> -->
         </div>
 
         <transition name="search">
@@ -34,22 +26,21 @@
         </transition>
 
         <div class="navbar-actions">
-          <!-- <button class="search-toggle" @click="toggleSearch">
+          <button class="search-toggle" @click="toggleSearch">
             <i class="fas fa-search"></i>
           </button>
-          
+
           <button class="cart-button" @click="handleCartClick">
             <i class="fas fa-shopping-cart"></i>
             <transition name="cart-count">
               <span v-if="cartCount > 0" class="cart-count">{{ cartCount }}</span>
             </transition>
-          </button> -->
+          </button>
 
-          <!-- <button class="login-button" @mouseover="loginHovered = true" @mouseleave="loginHovered = false">
-            <div :class="['login-button-background', { 'background-active': loginHovered }]"></div>
+          <button class="login-button">
             <i class="fas fa-user"></i>
             <span>เข้าสู่ระบบ</span>
-          </button> -->
+          </button>
         </div>
 
         <button :class="['mobile-menu-button', { 'is-active': isMenuOpen }]" @click="toggleMenu">
@@ -61,13 +52,7 @@
 
       <transition name="mobile-menu">
         <div v-if="isMenuOpen" class="mobile-menu">
-          <router-link
-            v-for="item in menuItems"
-            :key="item.path"
-            :to="item.path"
-            class="mobile-menu-item"
-            @click="isMenuOpen = false"
-          >
+          <router-link v-for="item in menuItems" :key="item.path" :to="item.path" class="mobile-menu-item" @click="isMenuOpen = false">
             {{ item.name }}
           </router-link>
           <div class="mobile-menu-actions">
@@ -83,7 +68,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 
 const isScrolled = ref(false);
 const isMenuOpen = ref(false);
@@ -91,13 +76,11 @@ const showSearch = ref(false);
 const searchQuery = ref('');
 const cartCount = ref(0);
 const logoHovered = ref(false);
-const loginHovered = ref(false);
-const hoveredItem = ref(null);
-const menuItems = ref([
+const menuItems = [
   { name: 'หน้าแรก', path: '/' },
   { name: 'เมนูอาหาร', path: '/menu' },
   { name: 'โปรโมชั่น', path: '/promotions' },
-]);
+];
 
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 20;
@@ -125,11 +108,6 @@ const handleSearch = () => {
 
 const handleCartClick = () => {
   cartCount.value++;
-  const cartButton = document.querySelector('.cart-button');
-  cartButton.classList.add('cart-bump');
-  setTimeout(() => {
-    cartButton.classList.remove('cart-bump');
-  }, 300);
 };
 
 onMounted(() => {

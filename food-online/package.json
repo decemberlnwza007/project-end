@@ -9,7 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.6.0",
+    "@fortawesome/free-brands-svg-icons": "^6.6.0",
+    "@fortawesome/free-regular-svg-icons": "^6.6.0",
+    "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "@fortawesome/vue-fontawesome": "^3.0.8",
     "firebase": "^11.0.1",
+    "oh-vue-icons": "^1.0.0-rc3",
+    "sweetalert2": "^11.14.4",
     "vue": "^3.5.12",
     "vue-router": "^4.4.5"
   },

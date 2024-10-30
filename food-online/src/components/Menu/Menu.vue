@@ -1,30 +1,33 @@
 <template>
     <div class="container">
-        <!-- Header -->
         <div class="header-section">
             <h1 class="page-title">หิวใช่หรือไม่?</h1>
-            <button @click="toggleCart" class="view-cart-btn" id="sticky">
-                ตะกร้า ({{ cart.length }})
+            <button @click="toggleCart" class="view-cart-btn" id="sticky" :class="{ 'cart-anmation': isAnimating }">
+                <OhVueIcon name="bi-cart-fill" style="width: 24px; height: 24px" />
+                <p>{{ cart.length }}</p>
             </button>
         </div>
 
-        <!-- Categories -->
         <nav class="categories-nav">
             <div v-for="(category, index) in categories" :key="index" class="category-pill"
                 :class="{ active: category.active }">
-                {{ category.title }}
+                <button class=" custom-button">{{ category.title }}</button>
             </div>
         </nav>
 
-        <!-- Featured Recipe -->
+        <h2 class="section-title">เมนูแนะนำ</h2>
         <div class="featured-recipe">
-            <img src="https://www.prachachat.net/wp-content/uploads/2023/11/%E0%B8%82%E0%B9%89%E0%B8%AD%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B9%83%E0%B8%99%E0%B8%A2%E0%B9%88%E0%B8%AD%E0%B8%AB%E0%B8%99%E0%B9%89%E0%B8%B2%E0%B8%82%E0%B8%AD%E0%B8%87%E0%B8%84%E0%B8%B8%E0%B8%93-7-2.jpg"
-                alt="Featured Recipe" class="featured-image">
+
+        <div v-for="(recipe, index) in recipes" :key="index">
+            <img src="https://s359.kapook.com/r/600/auto/pagebuilder/827b5b4c-e396-49bc-a9ba-282ba7e20f83.jpg"
+                :alt="recipe.title" class="featured-image">
             <div class="featured-content">
-                <h2 class="featured-title" style="color: black;">ไก่ทอด KFC</h2>
+                <h2 class="featured-title" style="color: white;"> {{ spaghetti.title }}</h2>
+                <!-- <p>79 ฿</p> -->
                 <button class="view-recipe-btn" @click="addToCart('ไก่ทอด KFC')">สั่งเลย</button>
             </div>
         </div>
+    </div>
         <Search />
         <!-- Recipe Grid -->
         <div class="recipes-section">
@@ -40,16 +43,21 @@
                     </div>
                     <div class="recipe-info">
                         <div class="recipe-meta">
-                            <span class="recipe-category">{{ recipe.category }}</span>
+                            <span class="text-md">{{ recipe.category }}</span>
                             <div class="recipe-rating">
                                 <span class="rating-number">{{ recipe.rating }}</span>
                                 <span class="star filled">★</span>
                             </div>
                         </div>
                         <h3 class="recipe-title">{{ recipe.title }}</h3>
-                        <p class="recipe-chef">โดย {{ recipe.chef }}</p>
-                        <button class="button-view-menu" @click="addToCart(recipe.title)">หยิบใส่ตะกร้า</button>
+                        <div class="recipe-chef-price">
+                            <p class="text-sm">โดย {{ recipe.chef }}</p>
+                            <span class="flex justify-end">{{ recipe.price }}</span>
+                        </div>
+                        <br>
+                        <button class="button-view-menu w-full" @click="addToCart(recipe)">หยิบใส่ตะกร้า</button>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -59,35 +67,55 @@
                 <h2>รายการในตะกร้า</h2>
                 <ul>
                     <li v-for="(item, index) in cart" :key="index" class="cart-item">
-                        {{ item }} <button @click="removeFromCart(index)" class="remove-btn">ลบ</button>
+                        {{ item.title }} - {{ item.price }} <button @click="removeFromCart(index)" class="remove-btn">ลบ</button>
                     </li>
                 </ul>
+                <hr>
+                <br>
+                <p class="flex justify-end">รวม: {{ totalPrice  }} ฿</p>
                 <div class="cart-footer">
-                    <button @click="toggleCart" class="close-btn">ปิด</button>
+                    <button @click="toggleCart" class="close-btn ">ปิด</button>
                     <button @click="confirmOrder" class="confirm-order-btn">ยืนยันการสั่งซื้อ</button>
                 </div>
             </div>
         </div>
 
-
-        <!-- Confirmation Modal -->
         <div v-if="showConfirmation" class="confirmation-modal">
             <h2>ยืนยันการสั่งซื้อ</h2>
             <p>คุณต้องการสั่งอาหารต่อไปนี้:</p>
+            <br>
+            <hr>
+            <br>
             <ul>
-                <li v-for="(item, index) in cart" :key="index">{{ item }}</li>
+                <li v-for="(item, index) in cart" :key="index">
+                    <li>{{ item.title }}</li>
+                    <li class="flex justify-end">{{ item.price }}</li>
+                </li>
+                <li>ราคารวม: {{ totalPrice }} ฿ </li>
             </ul>
-            <button @click="placeOrder">ยืนยัน</button>
-            <button @click="cancelOrder">ยกเลิก</button>
+            <button @click="placeOrder" class="confirm-order-btn w-9/12">ยืนยัน</button>
+            &nbsp;
+            <button @click="cancelOrder" class="remove-btn w-2/12">ยกเลิก</button>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import Search from '../Search/Search.vue';
+import { OhVueIcon, addIcons } from 'oh-vue-icons';
+import { RiRefreshLine } from 'oh-vue-icons/icons';
+import { BiCartFill } from 'oh-vue-icons/icons';
 
-// Reactive state
+
+const icons = {
+    RiRefreshLine,
+    BiCartFill
+}
+
+addIcons(RiRefreshLine);
+addIcons(BiCartFill);
+
 const categories = ref([
     { title: 'ทั้งหมด', active: true },
     { title: 'อาหารไทย', active: false },
@@ -103,57 +131,86 @@ const recipes = ref([
         category: 'อาหารฟิวชั่น',
         rating: 4.9,
         chef: 'เชฟมิ้นท์',
-        imageUrl: 'https://img.wongnai.com/p/1920x0/2022/09/21/ffe2ec4187a24c69ae86ce20641bdd86.jpg'
+        imageUrl: 'https://img.wongnai.com/p/1920x0/2022/09/21/ffe2ec4187a24c69ae86ce20641bdd86.jpg',
+        price: '129 ฿'
     },
     {
         title: 'ข้าวผัดกุ้งกระเทียม',
         category: 'อาหารไทย',
         rating: 4.8,
         chef: 'เชฟปิง',
-        imageUrl: 'https://www.pholfoodmafia.com/wp-content/uploads/2018/07/1000x6503GarlicPrawnFriedRice.jpg'
+        imageUrl: 'https://www.pholfoodmafia.com/wp-content/uploads/2018/07/1000x6503GarlicPrawnFriedRice.jpg',
+        price: '79 ฿'
     },
     {
         title: 'ส้มตำไทย',
         category: 'อาหารอีสาน',
         rating: 4.9,
         chef: 'เชฟแหม่ม',
-        imageUrl: 'https://www.unileverfoodsolutions.co.th/th/chef-inspiration/simple-tips-for-great-flavour/somtum-green-papaya-salad-recipes/jcr:content/parsys/content-aside-footer/tipsandadvice/image.img.jpg/1695118621402.jpg'
+        imageUrl: 'https://www.unileverfoodsolutions.co.th/th/chef-inspiration/simple-tips-for-great-flavour/somtum-green-papaya-salad-recipes/jcr:content/parsys/content-aside-footer/tipsandadvice/image.img.jpg/1695118621402.jpg',
+        price: '69 ฿'
+    },
+    {
+        title: 'สปาเกตตี้คาโบนารา',
+        category: 'อาหารต่างประเทศ',
+        rating: 4.8,
+        chef: 'Go Don',
+        imageUrl: 'https://s359.kapook.com/r/600/auto/pagebuilder/827b5b4c-e396-49bc-a9ba-282ba7e20f83.jpg',
+        price: '79 ฿'
     }
 ]);
+
+const spaghetti = recipes.value.find(recipe => recipe.title === 'สปาเกตตี้คาโบนารา');
+
+const isAnimating = ref(false);
 
 const cart = ref([]);
 const showCart = ref(false);
 const showConfirmation = ref(false);
 
-// Methods
-const addToCart = (item) => {
-    cart.value.push(item);
+const addToCart = (recipe) => {
+    cart.value.push({ title: recipe.title, price: recipe.price });
 };
 
 const removeFromCart = (index) => {
     cart.value.splice(index, 1);
 };
 
+
 const toggleCart = () => {
     showCart.value = !showCart.value;
+    isAnimating.value = true;
+
+    setTimeout(() => {
+        isAnimating.value = false;
+    }, 300)
 };
+
+const totalPrice = computed(() => {
+    return cart.value.reduce((total, item) => total + parseFloat(item.price), 0).toFixed(0);
+})
+
+console.log(totalPrice)
+
+
 
 const confirmOrder = () => {
     if (cart.value.length > 0) {
         showConfirmation.value = true;
-        showCart.value = false; // Hide cart on confirm
+        showCart.value = false;
     }
 };
 
 const placeOrder = () => {
     alert('สั่งซื้อเรียบร้อยแล้ว: ' + cart.value.join(', '));
-    cart.value = []; // Clear cart
+    cart.value = [];
     showConfirmation.value = false;
 };
 
 const cancelOrder = () => {
-    showConfirmation.value = false; // Close confirmation modal
+    showConfirmation.value = false;
 };
+
 </script>
 
 <style scoped>
@@ -165,6 +222,10 @@ const cancelOrder = () => {
     padding: 0;
     box-sizing: border-box;
     font-family: 'Kanit', sans-serif;
+}
+
+.cart {
+    font-size: 5rem;
 }
 
 :root {
@@ -181,6 +242,51 @@ const cancelOrder = () => {
     --radius-md: 12px;
     --radius-lg: 16px;
 }
+
+.swal2-popup {
+    font-family: "Kanit";
+}
+
+
+.custom-button {
+    padding: 12px 24px;
+    background-color: #f97316;
+    border: none;
+    border-radius: 12px;
+    font-weight: 500;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.custom-button:hover {
+    background-color: #fb923c; 
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.custom-button:active{
+    background-color: #f97316; 
+    transform: scale(0.95); 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.cart-animation {
+    animation: bounce 0.3s;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
 
 .container {
     max-width: 1200px;
@@ -205,7 +311,23 @@ const cancelOrder = () => {
     align-items: center;
     z-index: 1000;
     padding: 20px;
+    transition: transform 0.3s ease;
+    transform: scale(1);
 }
+
+/* .cart-modal {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.9);
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+} */
+
+.cart-modal.active {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
 
 .cart-list {
     background-color: #fff;
@@ -243,9 +365,13 @@ const cancelOrder = () => {
     margin-top: 20px;
 }
 
+.close-btn{
+    background-color: #ff4d4d;
+}
+
 .close-btn,
 .confirm-order-btn {
-    padding: 10px 15px;
+    padding: 5px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -262,7 +388,6 @@ const cancelOrder = () => {
 }
 
 
-/* Header styles */
 .header-section {
     display: flex;
     justify-content: space-between;
@@ -306,7 +431,6 @@ const cancelOrder = () => {
     color: var(--text-secondary);
 }
 
-/* Categories navigation */
 .categories-nav {
     display: flex;
     gap: 12px;
@@ -336,7 +460,6 @@ const cancelOrder = () => {
     color: white;
 }
 
-/* Featured Recipe */
 .featured-recipe {
     position: relative;
     border-radius: var(--radius-lg);
@@ -405,10 +528,23 @@ const cancelOrder = () => {
     border: none;
     border-radius: 12px;
     font-weight: 500;
+    color: white;
     cursor: pointer;
-    transition: transform 0.2s ease;
-
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
+.button-view-menu:hover {
+    background-color: #fb923c; 
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.button-view-menu:active {
+    background-color: #f97316; 
+    transform: scale(0.95); 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 
 .view-recipe-btn:hover {
     transform: translateY(-1px);
@@ -444,7 +580,7 @@ const cancelOrder = () => {
 
 .recipe-card {
     background-color: var(--background-color);
-    border-radius: var(--radius-lg);
+    border-radius: 16px;
     overflow: hidden;
     transition: transform 0.2s ease;
 }
@@ -518,7 +654,6 @@ const cancelOrder = () => {
     color: var(--text-secondary);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .container {
         padding: 20px;
@@ -550,6 +685,9 @@ const cancelOrder = () => {
 @media (max-width: 480px) {
     .recipes-grid {
         grid-template-columns: 1fr;
+    }
+    .recipe-card {
+        grid-template-columns: 2fr;
     }
 }
 </style>
